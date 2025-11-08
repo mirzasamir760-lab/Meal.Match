@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurant</title>
+  <link rel="stylesheet" href="style1.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <style>
+    .dyn-logo { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <img id="dynLogo" src="" alt="Logo" class="logo dyn-logo" />
+      <h1 id="dynTitle">Restaurant</h1>
+      <nav>
+        <a href="res.html">← Back to Restaurant</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="menu">
+    <h2>Menu</h2>
+    <input id="dynSearch" type="text" placeholder="Search your meal..." style="padding: 10px; width: 60%; max-width: 400px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 20px;">
+    <div id="dynMenuList" class="menu-list"></div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Meal Match. All Rights Reserved.</p>
+  </footer>
+
+  <script>
+    (function(){
+      function getStorage(key, def){ try { var v=localStorage.getItem(key); return v?JSON.parse(v):def; } catch(e){ return def; } }
+      function qs(name){ var m=location.search.match(new RegExp('[?&]'+name+'=([^&]+)')); return m?decodeURIComponent(m[1]):null; }
+      function renderMenu(items){
+        var wrap=document.getElementById('dynMenuList');
+        wrap.innerHTML='';
+        if(!items.length){ wrap.innerHTML='<div style="color:#666;">No items yet.</div>'; return; }
+        items.forEach(function(it){
+          var item=document.createElement('div'); item.className='menu-item';
+          var img=document.createElement('img'); img.src=it.image_url||'food2.jpg'; img.alt=it.name;
+          var details=document.createElement('div'); details.className='menu-details';
+          var h3=document.createElement('h3'); h3.textContent=it.name;
+          var p=document.createElement('p'); p.className='price'; p.innerHTML='¥'+(it.price||0)+' ';
+          var btn=document.createElement('button'); btn.className='add-btn'; btn.textContent='ADD';
+          details.appendChild(h3); details.appendChild(p); details.appendChild(btn);
+          item.appendChild(img); item.appendChild(details);
+          wrap.appendChild(item);
+        });
+      }
+      function filterAndRender(all){
+        var q=(document.getElementById('dynSearch').value||'').toLowerCase();
+        var filtered = all.filter(function(i){ return !q || (i.name||'').toLowerCase().indexOf(q)>=0; });
+        renderMenu(filtered);
+      }
+      var rid=qs('rid');
+      var restaurants=getStorage('mm_restaurants',[]);
+      var r=restaurants.find(function(x){return x.id===rid;});
+      if(r){
+        document.getElementById('dynTitle').textContent=r.name||'Restaurant';
+        var logo=document.getElementById('dynLogo');
+        logo.src=r.image_url||'food.jpg';
+        logo.alt=r.name||'Logo';
+      }
+      var allItems=getStorage('mm_menu_items',[]).filter(function(i){ return i.restaurant_id===rid; });
+      document.getElementById('dynSearch').addEventListener('input', function(){ filterAndRender(allItems); });
+      filterAndRender(allItems);
+    })();
+  </script>
+  <script src="auth.js"></script>
+</body>
+</html>
+
+
+
+
+
